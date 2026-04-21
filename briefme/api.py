@@ -3,6 +3,8 @@
 Endpoints:
   /health           — service health check
   /heartbeat/mock   — run optimized heartbeat with mock inbox
+  /heartbeat/real   — run real heartbeat (IMAP + LLM classifier)
+  /create-event     — create Google Calendar event from meeting email
   /compare          — before vs after metrics side by side
 """
 
@@ -109,6 +111,28 @@ class InefficientAgent:
 @app.get("/health")
 def health():
     return {"status": "healthy", "service": "BriefMe-AI"}
+
+
+@app.get("/heartbeat/real")
+def heartbeat_real(since_hours: int = 24, limit: int = 10):
+    """Run real heartbeat — IMAP fetch + LLM classification."""
+    from briefme.real_heartbeat import run_real_heartbeat
+    return run_real_heartbeat(since_hours=since_hours, limit=limit)
+
+
+@app.get("/calendar")
+def calendar_events(max_results: int = 15, days_ahead: int = 30):
+    """List upcoming Google Calendar events from all calendars."""
+    from briefme.calendar_client import list_upcoming_events
+    events = list_upcoming_events(max_results=max_results, days_ahead=days_ahead)
+    return {"events": events, "count": len(events)}
+
+
+@app.post("/create-event")
+def create_event_endpoint(summary: str, start_time: str, duration: int = 30, description: str = ""):
+    """Create a Google Calendar event (Alfred confirms before calling this)."""
+    from briefme.calendar_client import create_event
+    return create_event(summary=summary, start_time=start_time, duration_minutes=duration, description=description)
 
 
 @app.get("/heartbeat/mock")
