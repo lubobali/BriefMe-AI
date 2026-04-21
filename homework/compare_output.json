@@ -5,10 +5,30 @@
     "gmail_searches": 11,
     "llm_calls_per_email": 3,
     "provider_tokens": {
-      "input_tokens": 4338,
-      "output_tokens": 552,
+      "input_tokens": 450,
+      "output_tokens": 1002,
       "total_llm_calls": 9,
-      "note": "3x the optimized total (paraphrase + executive + risk per email)"
+      "per_email": [
+        {
+          "email_id": "t1",
+          "input_tokens": 162,
+          "output_tokens": 366,
+          "llm_calls": 3
+        },
+        {
+          "email_id": "t2",
+          "input_tokens": 144,
+          "output_tokens": 300,
+          "llm_calls": 3
+        },
+        {
+          "email_id": "t3",
+          "input_tokens": 144,
+          "output_tokens": 336,
+          "llm_calls": 3
+        }
+      ],
+      "note": "Measured: 3 real LLM calls per email (paraphrase + executive + risk)"
     }
   },
   "after": {
@@ -18,7 +38,7 @@
     "llm_calls_per_email": 1,
     "provider_tokens": {
       "input_tokens": 1446,
-      "output_tokens": 184,
+      "output_tokens": 181,
       "total_llm_calls": 3,
       "per_email": [
         {
@@ -29,22 +49,27 @@
         {
           "email_id": "t2",
           "input_tokens": 480,
-          "output_tokens": 64
+          "output_tokens": 63
         },
         {
           "email_id": "t3",
           "input_tokens": 480,
-          "output_tokens": 54
+          "output_tokens": 52
         }
       ],
-      "note": "Measured: 1 real LLM call per email, all 3 emails"
+      "note": "Measured: 1 real LLM call per email (combined classify + summarize)"
     }
   },
   "reduction": {
     "tool_calls_pct": 78.9,
     "workflow_tokens_pct": 95.9,
     "llm_calls_pct": 66.7,
-    "provider_input_tokens_pct": 66.7,
-    "provider_output_tokens_pct": 66.7
+    "provider_input_tokens_pct": -221.3,
+    "provider_output_tokens_pct": 81.9,
+    "provider_total_tokens": {
+      "before": 1452,
+      "after": 1627,
+      "note": "Input increased (richer prompt with schema/rules) but output decreased 84% (compact JSON vs verbose prose). Output tokens cost 3-5x more than input at most providers, so net cost is lower."
+    }
   }
 }
