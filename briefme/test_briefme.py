@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from briefme.schemas import Email, EmailClassification, Action, HeartbeatResult
 from briefme.guardrails import redact_pii, check_prompt_injection
-from briefme.client import call_llm
+from briefme.client import call_llm, last_token_usage
 from briefme.classifier import classify_and_summarize
 from briefme.heartbeat import EfficientChiefOfStaffAgent, MockTools, enforce_security_policy
 from briefme.api import app
@@ -518,3 +518,76 @@ class TestEdgeCases:
         """Security policy rejects email limits above max."""
         with pytest.raises(ValueError, match="limits inbox fetch"):
             enforce_security_policy("owner@example.com", 100)
+
+
+# ============================================================
+# Layer 7: E2E — Real LLM classifier → calendar/action (real API)
+# ============================================================
+
+
+class TestE2E:
+    """End-to-end: real LLM classifier output feeds mock tool actions."""
+
+    def test_classifier_feeds_calendar_event(self):
+        """Real LLM classifies meeting email → extracted date feeds calendar creation."""
+        import briefme.client as client_module
+
+        email = Email(
+            id="e2e-meeting",
+            subject="Roadmap review",
+            sender="boss@company.com",
+            date="2026-04-21T10:00:00Z",
+            body="Can we schedule a 30-minute meeting next Tuesday at 2pm to review the Q2 roadmap?",
+            snippet="Can we schedule a 30-minute meeting...",
+        )
+        classification = classify_and_summarize(email)
+
+        # Verify real LLM classified correctly
+        assert classification.category == "meeting"
+        assert classification.extracted_date is not None
+        assert classification.confidence >= 0.7
+
+        # Feed classifier output into mock calendar tool
+        tools = MockTools(inbox=[])
+        tools.create_calendar_event(
+            title=f"Meeting: {email.subject}",
+            start=classification.extracted_date,
+            end=classification.extracted_date,  # real app would calculate end time
+            attendee="lubo@lubot.ai",
+        )
+
+        # Verify calendar event used the LLM-extracted date, not hardcoded
+        cal_call = tools.call_log[0]
+        assert classification.extracted_date in cal_call["payload"]
+        assert "Meeting: Roadmap review" in cal_call["payload"]
+
+    def test_classifier_ambiguous_date(self):
+        """Real LLM handles ambiguous date gracefully."""
+        email = Email(
+            id="e2e-ambiguous",
+            subject="Let's catch up",
+            sender="colleague@company.com",
+            date="2026-04-21T10:00:00Z",
+            body="We should meet sometime next week to discuss the project.",
+            snippet="We should meet sometime next week...",
+        )
+        classification = classify_and_summarize(email)
+
+        assert classification.category == "meeting"
+        # Date should be extracted but may be vague
+        # Confidence may be lower for ambiguous dates
+        assert classification.confidence > 0
+
+    def test_real_token_usage_captured(self):
+        """Real provider token usage is captured from API response."""
+        import briefme.client as client_module
+
+        call_llm(
+            system_prompt="Reply in exactly 3 words.",
+            user_content="Say hello.",
+            max_tokens=50,
+        )
+
+        usage = client_module.last_token_usage
+        assert usage["input_tokens"] > 0, "Provider should report input tokens"
+        assert usage["output_tokens"] > 0, "Provider should report output tokens"

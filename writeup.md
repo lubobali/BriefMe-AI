@@ -70,7 +70,7 @@ Result: 4 tool calls, 102 estimated tokens for 3 emails.
 | FYI message | "No action needed, just sharing context" | FYI email sent | PASSED — correctly classified as FYI (not action) |
 | No new email | Empty inbox | HEARTBEAT_OK | PASSED — returned HEARTBEAT_OK |
 
-### Additional Tests (35 total)
+### All Tests (44 total)
 
 - Schema validation: 10 tests (Pydantic accept/reject)
 - PII redaction: 8 tests (email, phone, IP, API key, prompt injection)
@@ -78,8 +78,12 @@ Result: 4 tool calls, 102 estimated tokens for 3 emails.
 - LLM classifier: 4 tests (real API — meeting, action, FYI, prompt injection)
 - Heartbeat workflow: 8 tests (all 4 cases + efficiency metrics)
 - FastAPI API: 4 tests (health, mock heartbeat, metrics, compare endpoint)
+- Edge cases: 6 tests (non-approved sender, rate limit, mixed intent, FYI regression, security policy)
+- E2E: 3 tests (classifier → calendar with real LLM, ambiguous date, real token usage capture)
 
-Run: `python -m pytest briefme/test_briefme.py -v` → 35 passed in 7.29s
+Run: `python -m pytest briefme/test_briefme.py -v` → 44 passed in 7.84s
+
+See `homework/test_run_output.log` for full captured test output.
 
 ---
 

@@ -1,6 +1,6 @@
 # Test Evidence
 
-All 35 tests pass. Run with: `python -m pytest briefme/test_briefme.py -v`
+All 44 tests pass. Run with: `python -m pytest briefme/test_briefme.py -v`
 
 ## Test Case 1: Meeting Request → Calendar Event
 
@@ -109,10 +109,27 @@ Actions: []
 
 ---
 
+## E2E Tests (Real LLM → Mock Tool Actions)
+
+- `test_classifier_feeds_calendar_event` — PASSED: Real LLM classifies meeting → extracted date feeds calendar event creation (not hardcoded)
+- `test_classifier_ambiguous_date` — PASSED: Real LLM handles "sometime next week" gracefully
+- `test_real_token_usage_captured` — PASSED: Provider-side token usage captured from SSE stream (input_tokens > 0, output_tokens > 0)
+
+## Edge Case Tests
+
+- `test_non_approved_sender_ignored` — PASSED: Email from stranger@evil.com produces zero actions
+- `test_rate_limit_caps_at_10` — PASSED: 15 emails in inbox, only 10 processed
+- `test_mixed_intent_meeting_wins` — PASSED: "schedule a meeting to review expense report" → calendar event, not action email
+- `test_fyi_with_action_keyword_regression` — PASSED: "No action needed" → FYI, not action
+- `test_security_policy_enforced_at_init` — PASSED: Empty approved_sender raises ValueError
+- `test_security_policy_rejects_high_limit` — PASSED: limit=100 raises ValueError (max is 10)
+
+---
+
 ## Full Test Output
 
 ```
-35 passed in 7.56s
+44 passed in 7.84s
 
 TestSchemaValidation (10 tests) — Pydantic model validation
 TestGuardrails (8 tests) — PII redaction + prompt injection detection
@@ -120,4 +137,8 @@ TestLLMClient (1 test) — Real DataExpert API call
 TestClassifier (4 tests) — Real LLM classification for all 4 email types
 TestHeartbeat (8 tests) — Optimized workflow with mock tools
 TestAPI (4 tests) — FastAPI endpoint responses
+TestEdgeCases (6 tests) — Non-approved sender, rate limit, mixed intent, FYI regression, security policy
+TestE2E (3 tests) — Real LLM classifier → calendar, ambiguous date, real token usage
 ```
+
+Full captured test run log: `homework/test_run_output.log`

@@ -16,8 +16,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# Last recorded token usage from provider (real, not proxy)
+last_token_usage: dict = {}
+
+
 def _call_anthropic(system_prompt: str, user_content: str, max_tokens: int) -> str:
     """Call Anthropic-compatible API (DataExpert proxy). Returns text."""
+    global last_token_usage
     base_url = os.getenv("ANTHROPIC_BASE_URL", "")
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
@@ -40,16 +45,29 @@ def _call_anthropic(system_prompt: str, user_content: str, max_tokens: int) -> s
     )
     resp.raise_for_status()
 
-    # Parse SSE stream
+    # Parse SSE stream — capture text AND real token usage
     text_parts = []
+    usage = {"input_tokens": 0, "output_tokens": 0}
     for line in resp.text.split("\n"):
         if line.startswith("data: "):
             try:
                 data = json.loads(line[6:])
                 if data.get("type") == "content_block_delta":
                     text_parts.append(data["delta"]["text"])
+                # Capture token usage from message_start and message_delta
+                if "usage" in data:
+                    u = data["usage"]
+                    if "input_tokens" in u:
+                        usage["input_tokens"] = u["input_tokens"]
+                    if "output_tokens" in u:
+                        usage["output_tokens"] = u["output_tokens"]
+                if data.get("type") == "message_start" and "message" in data:
+                    msg_usage = data["message"].get("usage", {})
+                    if "input_tokens" in msg_usage:
+                        usage["input_tokens"] = msg_usage["input_tokens"]
             except (json.JSONDecodeError, KeyError):
                 continue
+    last_token_usage = usage
     return "".join(text_parts)
 
 
