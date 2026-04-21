@@ -4,6 +4,16 @@ AI-powered email chief of staff. Checks your inbox, classifies emails (meeting/a
 
 Built as a homework submission for DataExpert.io AI Engineering Bootcamp (Week 3) and as a real tool for personal use with OpenClaw + WhatsApp.
 
+## Real-Time WhatsApp Access — Calendar
+
+Text Alfred on WhatsApp and get your real Google Calendar events:
+
+### "What's in my calendar for tomorrow?" / "What's on my calendar this week?"
+
+![WhatsApp calendar query — real events from Google Calendar](screenshots/whatsapp-calendar.jpg)
+
+Alfred reads from all connected Google Calendars, shows events grouped by day with times in your timezone.
+
 ## Token Efficiency — Before vs After
 
 | Metric | Before (Inefficient) | After (Optimized) | Reduction |
