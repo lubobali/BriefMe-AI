@@ -111,3 +111,17 @@ See `homework/test_run_output.log` for full captured test output.
 | Rate limiting | Fetch 50 | Fetch 10 max | **Improved** |
 
 Safety posture is **improved**, not weakened.
+
+---
+
+## 6. Notes on Metrics Consistency
+
+**Test count:** 45 tests across 8 classes (TestSchemaValidation, TestGuardrails, TestLLMClient, TestClassifier, TestHeartbeat, TestAPI, TestEdgeCases, TestE2E). All pass — see `homework/test_run_output.log`.
+
+**Token estimates:** The "before" token count of 2,477 comes from the `/compare` endpoint and `compare_output.json`. The original homework script (`inefficient_openclaw_workflow.py`) reports 2,863 because it runs slightly different reasoning text. Both are proxy metrics from `MockTools.estimated_tokens` (word count + overhead). For real LLM token usage, `client.py` captures provider-reported `input_tokens` and `output_tokens` from the Anthropic SSE stream — see `test_real_token_usage_captured`.
+
+**Two types of token measurement:**
+- **Workflow proxy** (`MockTools.estimated_tokens`): Measures token waste from policy repetition, verbose reasoning, and redundant summaries. Used for before/after comparison.
+- **Provider-reported** (`client.last_token_usage`): Real input/output tokens from the Anthropic API. Used for LLM classifier calls.
+
+**File paths:** `claude_skills/email_classifier.md` exists in the repo at that exact path. The classifier loads it via `_load_prompt()` in `classifier.py`. All 4 classifier tests pass with this path.

@@ -342,7 +342,7 @@ class TestHeartbeat:
         tools = MockTools(inbox=_make_inbox())
         agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "owner@example.com")
         result = agent.heartbeat()
-        # Inefficient: 2863 tokens. Optimized: should be well under 500
+        # Inefficient: 2,477 tokens. Optimized: should be well under 500
         assert tools.estimated_tokens < 500
 
 
@@ -518,6 +518,18 @@ class TestEdgeCases:
         """Security policy rejects email limits above max."""
         with pytest.raises(ValueError, match="limits inbox fetch"):
             enforce_security_policy("owner@example.com", 100)
+
+    def test_all_outbound_to_approved_recipient(self):
+        """All outbound communications go to approved_recipient only."""
+        tools = MockTools(inbox=_make_inbox())
+        agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "boss@company.com")
+        agent.heartbeat()
+        send_calls = [c for c in tools.call_log if c["tool"] == "Gmail:Send Email"]
+        for call in send_calls:
+            assert "boss@company.com" in call["payload"]
+        cal_calls = [c for c in tools.call_log if c["tool"] == "Google Calendar:Create Detailed Event"]
+        for call in cal_calls:
+            assert "boss@company.com" in call["payload"]
 
 
 # ============================================================

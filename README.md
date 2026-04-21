@@ -44,7 +44,7 @@ briefme/
   classifier.py     — LLM email classification (1 call per email)
   heartbeat.py      — Optimized heartbeat workflow + mock tools
   api.py            — FastAPI endpoints (/health, /heartbeat/mock, /compare)
-  test_briefme.py   — 35 tests across 6 classes
+  test_briefme.py   — 45 tests across 8 classes
 
 claude_skills/
   email_classifier.md — Combined classify + summarize prompt
@@ -71,7 +71,7 @@ cp .env.example .env
 ## Run Tests
 
 ```bash
-# All 41 tests (~9 sec, includes real LLM API calls)
+# All 45 tests (~13 sec, includes real LLM API calls)
 python -m pytest briefme/test_briefme.py -v
 
 # Fast tests only (~0.2 sec, no API calls)

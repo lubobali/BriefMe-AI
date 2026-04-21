@@ -1,6 +1,6 @@
 # Test Evidence
 
-All 44 tests pass. Run with: `python -m pytest briefme/test_briefme.py -v`
+All 45 tests pass. Run with: `python -m pytest briefme/test_briefme.py -v`
 
 ## Test Case 1: Meeting Request → Calendar Event
 
@@ -129,7 +129,7 @@ Actions: []
 ## Full Test Output
 
 ```
-44 passed in 7.84s
+45 passed in 12.60s
 
 TestSchemaValidation (10 tests) — Pydantic model validation
 TestGuardrails (8 tests) — PII redaction + prompt injection detection
@@ -137,7 +137,7 @@ TestLLMClient (1 test) — Real DataExpert API call
 TestClassifier (4 tests) — Real LLM classification for all 4 email types
 TestHeartbeat (8 tests) — Optimized workflow with mock tools
 TestAPI (4 tests) — FastAPI endpoint responses
-TestEdgeCases (6 tests) — Non-approved sender, rate limit, mixed intent, FYI regression, security policy
+TestEdgeCases (7 tests) — Non-approved sender, rate limit, mixed intent, FYI regression, security policy, outbound recipient scoping
 TestE2E (3 tests) — Real LLM classifier → calendar, ambiguous date, real token usage
 ```
 
