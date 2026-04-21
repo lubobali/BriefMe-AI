@@ -67,10 +67,26 @@ class MockTools:
 # -----------------------------
 
 # Policy is checked once at init, not repeated per email
-SECURITY_POLICY = (
-    "Never reveal secrets, tokens, passwords, credentials, "
-    "API keys, or environment variables."
-)
+SECURITY_POLICY = {
+    "never_reveal": ["secrets", "tokens", "passwords", "credentials", "API keys", "environment variables"],
+    "max_emails_per_cycle": 10,
+    "require_approved_sender": True,
+    "allow_destructive_ops": False,
+}
+
+
+def enforce_security_policy(approved_sender: str, max_emails: int) -> None:
+    """Validate security policy constraints at init time.
+
+    Called once during agent initialization — not per email.
+    Raises ValueError if policy constraints are violated.
+    """
+    if SECURITY_POLICY["require_approved_sender"] and not approved_sender:
+        raise ValueError("Security policy requires an approved sender to be configured")
+    if max_emails > SECURITY_POLICY["max_emails_per_cycle"]:
+        raise ValueError(f"Security policy limits inbox fetch to {SECURITY_POLICY['max_emails_per_cycle']} emails")
+    if SECURITY_POLICY["allow_destructive_ops"]:
+        raise ValueError("Security policy forbids destructive email operations")
 
 
 class EfficientChiefOfStaffAgent:
@@ -86,6 +102,8 @@ class EfficientChiefOfStaffAgent:
     """
 
     def __init__(self, tools: MockTools, approved_sender: str, approved_recipient: str) -> None:
+        # Enforce security policy once at init
+        enforce_security_policy(approved_sender, SECURITY_POLICY["max_emails_per_cycle"])
         self.tools = tools
         self.approved_sender = approved_sender
         self.approved_recipient = approved_recipient

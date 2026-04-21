@@ -71,11 +71,11 @@ cp .env.example .env
 ## Run Tests
 
 ```bash
-# All 35 tests (~8 sec, includes real LLM API calls)
+# All 41 tests (~9 sec, includes real LLM API calls)
 python -m pytest briefme/test_briefme.py -v
 
 # Fast tests only (~0.2 sec, no API calls)
-python -m pytest briefme/test_briefme.py -v -k "Schema or Guardrails or Heartbeat or API"
+python -m pytest briefme/test_briefme.py -v -k "Schema or Guardrails or Heartbeat or API or EdgeCases"
 ```
 
 ## Run the API
@@ -89,6 +89,37 @@ Then:
 - `curl http://localhost:8098/heartbeat/mock` — run optimized heartbeat
 - `curl http://localhost:8098/compare` — before vs after metrics
 
+## Sender/Recipient Configuration
+
+The agent only processes emails from an approved sender and forwards summaries to a configured recipient. Set these in your code or via environment variables:
+
+```python
+agent = EfficientChiefOfStaffAgent(
+    tools=tools,
+    approved_sender="boss@company.com",    # only emails FROM this sender are processed
+    approved_recipient="you@company.com",  # summaries/actions sent TO this address
+)
+```
+
+For the real app, configure via `.env`:
+```
+GMAIL_APPROVED_SENDER=boss@company.com
+GMAIL_RECIPIENT=you@company.com
+```
+
+Security policy enforces that `approved_sender` must be set — the agent will not run without it.
+
+## Before/After Evidence (saved output)
+
+See `homework/compare_output.json` for a saved `/compare` endpoint result:
+```json
+{
+  "before": { "tool_calls": 19, "estimated_tokens": 2477, "gmail_searches": 11 },
+  "after": { "tool_calls": 4, "estimated_tokens": 102, "gmail_searches": 1 },
+  "reduction": { "tool_calls_pct": 78.9, "tokens_pct": 95.9 }
+}
+```
+
 ## Safety Controls
 
 - PII redaction on all email content before LLM (email, phone, IP, API keys)
@@ -96,6 +127,8 @@ Then:
 - Duplicate prevention via processed ID tracking
 - Rate limiting: max 10 emails per heartbeat
 - No destructive email operations (no delete, no archive)
+- Security policy enforced at init — agent won't start without approved sender
+- Sender scoping via `from:{approved_sender}` query — unknown senders never enter pipeline
 
 ## Built With
 

@@ -1,0 +1,16 @@
+{
+  "before": {
+    "tool_calls": 19,
+    "estimated_tokens": 2477,
+    "gmail_searches": 11
+  },
+  "after": {
+    "tool_calls": 4,
+    "estimated_tokens": 102,
+    "gmail_searches": 1
+  },
+  "reduction": {
+    "tool_calls_pct": 78.9,
+    "tokens_pct": 95.9
+  }
+}

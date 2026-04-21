@@ -9,7 +9,7 @@ from briefme.schemas import Email, EmailClassification, Action, HeartbeatResult
 from briefme.guardrails import redact_pii, check_prompt_injection
 from briefme.client import call_llm
 from briefme.classifier import classify_and_summarize
-from briefme.heartbeat import EfficientChiefOfStaffAgent, MockTools
+from briefme.heartbeat import EfficientChiefOfStaffAgent, MockTools, enforce_security_policy
 from briefme.api import app
 
 
@@ -388,3 +388,133 @@ class TestAPI:
         assert "after" in data
         assert data["before"]["tool_calls"] > data["after"]["tool_calls"]
         assert data["before"]["estimated_tokens"] > data["after"]["estimated_tokens"]
+
+
+# ============================================================
+# Layer 6: Edge Cases & Security (no API calls)
+# ============================================================
+
+
+class TestEdgeCases:
+    """Edge case handling and security enforcement."""
+
+    def test_non_approved_sender_ignored(self):
+        """Emails from non-approved senders never enter the pipeline."""
+        from dataclasses import dataclass
+        from datetime import datetime
+
+        @dataclass
+        class MockEmail:
+            id: str
+            sender: str
+            subject: str
+            body: str
+            unread: bool
+            received_at: datetime
+
+        inbox = [
+            MockEmail("e1", "stranger@evil.com", "Schedule a meeting",
+                      "Let's meet Tuesday at 2pm", True, datetime.now()),
+        ]
+        tools = MockTools(inbox=inbox)
+        agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "owner@example.com")
+        result = agent.heartbeat()
+        # Stranger's email filtered out by from: query — no actions taken
+        action_tools = [c for c in tools.call_log if c["tool"] != "Gmail:Find Email"]
+        assert len(action_tools) == 0
+        assert result == "HEARTBEAT_OK"
+
+    def test_rate_limit_caps_at_10(self):
+        """Inbox with >10 emails only processes first 10."""
+        from dataclasses import dataclass
+        from datetime import datetime
+
+        @dataclass
+        class MockEmail:
+            id: str
+            sender: str
+            subject: str
+            body: str
+            unread: bool
+            received_at: datetime
+
+        # Create 15 emails from approved sender
+        inbox = [
+            MockEmail(f"e{i}", "owner@example.com", f"Task {i}",
+                      f"Please do task {i}", True, datetime.now())
+            for i in range(15)
+        ]
+        tools = MockTools(inbox=inbox)
+        agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "owner@example.com")
+        result = agent.heartbeat()
+        # Should process at most 10 (limit=10 in find_email)
+        action_tools = [c for c in tools.call_log if c["tool"] != "Gmail:Find Email"]
+        assert len(action_tools) <= 10
+
+    def test_mixed_intent_meeting_wins(self):
+        """Email with both meeting and action keywords — meeting takes priority."""
+        from dataclasses import dataclass
+        from datetime import datetime
+
+        @dataclass
+        class MockEmail:
+            id: str
+            sender: str
+            subject: str
+            body: str
+            unread: bool
+            received_at: datetime
+
+        inbox = [
+            MockEmail("e1", "owner@example.com", "Schedule a meeting",
+                      "Please schedule a meeting to review the expense report",
+                      True, datetime.now()),
+        ]
+        tools = MockTools(inbox=inbox)
+        agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "owner@example.com")
+        result = agent.heartbeat()
+        # Meeting should win over action
+        calendar_calls = [c for c in tools.call_log if c["tool"] == "Google Calendar:Create Detailed Event"]
+        action_emails = [c for c in tools.call_log if c["tool"] == "Gmail:Send Email"]
+        assert len(calendar_calls) == 1
+        assert len(action_emails) == 0
+
+    def test_fyi_with_action_keyword_regression(self):
+        """'No action needed' should classify as FYI, not action."""
+        from dataclasses import dataclass
+        from datetime import datetime
+
+        @dataclass
+        class MockEmail:
+            id: str
+            sender: str
+            subject: str
+            body: str
+            unread: bool
+            received_at: datetime
+
+        inbox = [
+            MockEmail("e1", "owner@example.com", "Budget update",
+                      "No action needed on this, just for your information.",
+                      True, datetime.now()),
+        ]
+        tools = MockTools(inbox=inbox)
+        agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "owner@example.com")
+        result = agent.heartbeat()
+        fyi_emails = [c for c in tools.call_log
+                      if c["tool"] == "Gmail:Send Email" and "FYI" in c.get("subject", "")]
+        action_emails = [c for c in tools.call_log
+                         if c["tool"] == "Gmail:Send Email" and "Action" in c.get("subject", "")]
+        assert len(fyi_emails) == 1
+        assert len(action_emails) == 0
+
+    def test_security_policy_enforced_at_init(self):
+        """Security policy is checked at agent initialization."""
+        # No approved sender should fail
+        with pytest.raises(ValueError, match="approved sender"):
+            enforce_security_policy("", 10)
+
+    def test_security_policy_rejects_high_limit(self):
+        """Security policy rejects email limits above max."""
+        with pytest.raises(ValueError, match="limits inbox fetch"):
+            enforce_security_policy("owner@example.com", 100)

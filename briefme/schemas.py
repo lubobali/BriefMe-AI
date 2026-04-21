@@ -47,7 +47,7 @@ class Action(BaseModel):
 class HeartbeatResult(BaseModel):
     """Result of a complete heartbeat cycle."""
 
-    status: Literal["OK", "HEARTBEAT_OK"]
+    status: Literal["OK", "HEARTBEAT_OK", "DONE"]
     emails_checked: int
     actions_taken: list[Action]
     token_usage: dict
