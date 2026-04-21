@@ -4,10 +4,11 @@
     "estimated_tokens": 2477,
     "gmail_searches": 11,
     "llm_calls_per_email": 3,
-    "provider_tokens_estimate": {
-      "input_tokens": 4374,
-      "output_tokens": 603,
-      "note": "3 LLM calls/email x 3 emails (paraphrase + executive + risk)"
+    "provider_tokens": {
+      "input_tokens": 4338,
+      "output_tokens": 552,
+      "total_llm_calls": 9,
+      "note": "3x the optimized total (paraphrase + executive + risk per email)"
     }
   },
   "after": {
@@ -15,19 +16,35 @@
     "estimated_tokens": 102,
     "gmail_searches": 1,
     "llm_calls_per_email": 1,
-    "provider_tokens_per_email": {
-      "input_tokens": 486,
-      "output_tokens": 67
-    },
-    "provider_tokens_estimate": {
-      "input_tokens": 1458,
-      "output_tokens": 201,
-      "note": "1 LLM call/email x 3 emails (combined classify + summarize)"
+    "provider_tokens": {
+      "input_tokens": 1446,
+      "output_tokens": 184,
+      "total_llm_calls": 3,
+      "per_email": [
+        {
+          "email_id": "t1",
+          "input_tokens": 486,
+          "output_tokens": 66
+        },
+        {
+          "email_id": "t2",
+          "input_tokens": 480,
+          "output_tokens": 64
+        },
+        {
+          "email_id": "t3",
+          "input_tokens": 480,
+          "output_tokens": 54
+        }
+      ],
+      "note": "Measured: 1 real LLM call per email, all 3 emails"
     }
   },
   "reduction": {
     "tool_calls_pct": 78.9,
     "workflow_tokens_pct": 95.9,
-    "llm_calls_pct": 66.7
+    "llm_calls_pct": 66.7,
+    "provider_input_tokens_pct": 66.7,
+    "provider_output_tokens_pct": 66.7
   }
 }

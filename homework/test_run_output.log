@@ -51,4 +51,4 @@ briefme/test_briefme.py::TestE2E::test_classifier_feeds_calendar_event PASSED [ 
 briefme/test_briefme.py::TestE2E::test_classifier_ambiguous_date PASSED  [ 97%]
 briefme/test_briefme.py::TestE2E::test_real_token_usage_captured PASSED  [100%]
 
-============================= 45 passed in 16.11s ==============================
+============================= 45 passed in 19.96s ==============================
