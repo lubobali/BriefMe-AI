@@ -78,10 +78,10 @@ Result: 4 tool calls, 102 estimated tokens for 3 emails.
 - LLM classifier: 4 tests (real API — meeting, action, FYI, prompt injection)
 - Heartbeat workflow: 8 tests (all 4 cases + efficiency metrics)
 - FastAPI API: 4 tests (health, mock heartbeat, metrics, compare endpoint)
-- Edge cases: 6 tests (non-approved sender, rate limit, mixed intent, FYI regression, security policy)
+- Edge cases: 9 tests (non-approved sender, rate limit, mixed intent, FYI regression, FYI word boundary, security policy x2, outbound recipient, no secrets in logs)
 - E2E: 3 tests (classifier → calendar with real LLM, ambiguous date, real token usage capture)
 
-Run: `python -m pytest briefme/test_briefme.py -v` → 45 passed in 12.60s
+Run: `python -m pytest briefme/test_briefme.py -v` → 47 passed in 12.60s
 
 See `homework/test_run_output.log` for full captured test output.
 
@@ -116,7 +116,7 @@ Safety posture is **improved**, not weakened.
 
 ## 6. Notes on Metrics Consistency
 
-**Test count:** 45 tests across 8 classes (TestSchemaValidation, TestGuardrails, TestLLMClient, TestClassifier, TestHeartbeat, TestAPI, TestEdgeCases, TestE2E). All pass — see `homework/test_run_output.log`.
+**Test count:** 47 tests across 8 classes (TestSchemaValidation, TestGuardrails, TestLLMClient, TestClassifier, TestHeartbeat, TestAPI, TestEdgeCases, TestE2E). All pass — see `homework/test_run_output.log`.
 
 **Token estimates:** The "before" token count of 2,477 comes from the `/compare` endpoint and `compare_output.json`. The original homework script (`inefficient_openclaw_workflow.py`) reports 2,863 because it runs slightly different reasoning text. Both are proxy metrics from `MockTools.estimated_tokens` (word count + overhead). For real LLM token usage, `client.py` captures provider-reported `input_tokens` and `output_tokens` from the Anthropic SSE stream — see `test_real_token_usage_captured`.
 

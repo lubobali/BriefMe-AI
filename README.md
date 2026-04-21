@@ -44,7 +44,7 @@ briefme/
   classifier.py     — LLM email classification (1 call per email)
   heartbeat.py      — Optimized heartbeat workflow + mock tools
   api.py            — FastAPI endpoints (/health, /heartbeat/mock, /compare)
-  test_briefme.py   — 45 tests across 8 classes
+  test_briefme.py   — 47 tests across 8 classes
 
 claude_skills/
   email_classifier.md — Combined classify + summarize prompt
@@ -71,7 +71,7 @@ cp .env.example .env
 ## Run Tests
 
 ```bash
-# All 45 tests (~13 sec, includes real LLM API calls)
+# All 47 tests (~13 sec, includes real LLM API calls)
 python -m pytest briefme/test_briefme.py -v
 
 # Fast tests only (~0.2 sec, no API calls)
@@ -138,6 +138,55 @@ Both paths share the same schemas, dedup logic, rate limiting, and sender scopin
 - No destructive email operations (no delete, no archive)
 - Security policy enforced at init — agent won't start without approved sender
 - Sender scoping via `from:{approved_sender}` query — unknown senders never enter pipeline
+
+## Repository Tree
+
+```
+BriefMe/
+  briefme/
+    __init__.py
+    schemas.py              — Pydantic v2 models
+    guardrails.py           — PII redaction + prompt injection
+    client.py               — LLM client (Anthropic + NVIDIA fallback)
+    classifier.py           — LLM email classification
+    heartbeat.py            — Optimized heartbeat workflow
+    api.py                  — FastAPI endpoints
+    test_briefme.py         — 47 tests across 8 classes
+  claude_skills/
+    email_classifier.md     — Combined classify + summarize prompt
+  homework/
+    HEARTBEAT_OPTIMIZED.md  — Optimized heartbeat instructions
+    before_after.md         — Metrics comparison
+    optimized_workflow.md   — What changed and why
+    test_evidence.md        — Test results for all cases
+    edge_cases.md           — Edge case handling
+    compare_output.json     — Saved /compare endpoint output
+    test_run_output.log     — Full pytest output (47 passed)
+    inefficient_openclaw_workflow.py — Original baseline
+  README.md
+  writeup.md
+  requirements.txt
+  .env.example
+```
+
+## Reproducibility
+
+**Environment variables used for test runs:**
+```
+LLM_PROVIDER=anthropic
+ANTHROPIC_BASE_URL=https://www.dataexpert.io/api/v1/anthropic
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+NVIDIA_MODEL=nvidia/llama-3.1-nemotron-ultra-253b-v1  (fallback only)
+```
+
+**Test run and compare_output.json were generated from the same commit.** To reproduce:
+```bash
+source venv/bin/activate
+python -m pytest briefme/test_briefme.py -v        # 47 passed
+python -c "from fastapi.testclient import TestClient; from briefme.api import app; import json; print(json.dumps(TestClient(app).get('/compare').json(), indent=2))"
+```
+
+**Note on provider token tradeoff:** After optimization, provider input tokens increase (richer classifier prompt with schema/rules) while output tokens drop ~82% (compact JSON vs verbose prose). Since output tokens cost 5x more than input on Claude Sonnet ($15/M vs $3/M), the net cost per heartbeat drops from ~$0.019 to ~$0.007 (63.7% reduction).
 
 ## Built With
 
