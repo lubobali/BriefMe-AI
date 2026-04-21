@@ -6,25 +6,25 @@
     "llm_calls_per_email": 3,
     "provider_tokens": {
       "input_tokens": 450,
-      "output_tokens": 1002,
+      "output_tokens": 1209,
       "total_llm_calls": 9,
       "per_email": [
         {
           "email_id": "t1",
           "input_tokens": 162,
-          "output_tokens": 366,
+          "output_tokens": 351,
           "llm_calls": 3
         },
         {
           "email_id": "t2",
           "input_tokens": 144,
-          "output_tokens": 300,
+          "output_tokens": 433,
           "llm_calls": 3
         },
         {
           "email_id": "t3",
           "input_tokens": 144,
-          "output_tokens": 336,
+          "output_tokens": 425,
           "llm_calls": 3
         }
       ],
@@ -38,13 +38,13 @@
     "llm_calls_per_email": 1,
     "provider_tokens": {
       "input_tokens": 1446,
-      "output_tokens": 181,
+      "output_tokens": 182,
       "total_llm_calls": 3,
       "per_email": [
         {
           "email_id": "t1",
           "input_tokens": 486,
-          "output_tokens": 66
+          "output_tokens": 65
         },
         {
           "email_id": "t2",
@@ -54,7 +54,7 @@
         {
           "email_id": "t3",
           "input_tokens": 480,
-          "output_tokens": 52
+          "output_tokens": 54
         }
       ],
       "note": "Measured: 1 real LLM call per email (combined classify + summarize)"
@@ -65,11 +65,16 @@
     "workflow_tokens_pct": 95.9,
     "llm_calls_pct": 66.7,
     "provider_input_tokens_pct": -221.3,
-    "provider_output_tokens_pct": 81.9,
+    "provider_output_tokens_pct": 84.9,
     "provider_total_tokens": {
-      "before": 1452,
-      "after": 1627,
-      "note": "Input increased (richer prompt with schema/rules) but output decreased 84% (compact JSON vs verbose prose). Output tokens cost 3-5x more than input at most providers, so net cost is lower."
+      "before": 1659,
+      "after": 1628
+    },
+    "estimated_cost_usd": {
+      "before": 0.019485,
+      "after": 0.007068,
+      "pricing": "Claude Sonnet 4.6: $3/M input, $15/M output",
+      "note": "Output tokens cost 5x more than input. Compact JSON output is the main cost driver reduction."
     }
   }
 }

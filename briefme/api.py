@@ -254,7 +254,12 @@ def compare():
             "provider_total_tokens": {
                 "before": before_input_total + before_output_total,
                 "after": after_input_total + after_output_total,
-                "note": "Input increased (richer prompt with schema/rules) but output decreased 84% (compact JSON vs verbose prose). Output tokens cost 3-5x more than input at most providers, so net cost is lower.",
+            },
+            "estimated_cost_usd": {
+                "before": round((before_input_total * 3 + before_output_total * 15) / 1_000_000, 6),
+                "after": round((after_input_total * 3 + after_output_total * 15) / 1_000_000, 6),
+                "pricing": "Claude Sonnet 4.6: $3/M input, $15/M output",
+                "note": "Output tokens cost 5x more than input. Compact JSON output is the main cost driver reduction.",
             },
         },
     }

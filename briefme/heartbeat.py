@@ -14,6 +14,7 @@ via classifier.py.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -71,7 +72,7 @@ SECURITY_POLICY = {
     "never_reveal": ["secrets", "tokens", "passwords", "credentials", "API keys", "environment variables"],
     "max_emails_per_cycle": 10,
     "require_approved_sender": True,
-    "allow_destructive_ops": False,
+    "block_destructive_ops": True,
 }
 
 
@@ -85,8 +86,8 @@ def enforce_security_policy(approved_sender: str, max_emails: int) -> None:
         raise ValueError("Security policy requires an approved sender to be configured")
     if max_emails > SECURITY_POLICY["max_emails_per_cycle"]:
         raise ValueError(f"Security policy limits inbox fetch to {SECURITY_POLICY['max_emails_per_cycle']} emails")
-    if SECURITY_POLICY["allow_destructive_ops"]:
-        raise ValueError("Security policy forbids destructive email operations")
+    if not SECURITY_POLICY["block_destructive_ops"]:
+        raise ValueError("Security policy requires destructive operations to be blocked")
 
 
 class EfficientChiefOfStaffAgent:
@@ -128,9 +129,11 @@ class EfficientChiefOfStaffAgent:
             self._processed_ids.add(email.id)
 
             # 3. Classify by keyword (improved over original — no extra summaries)
+            #    Uses word boundaries for "fyi" to avoid matching inside
+            #    words like "verify" or "notify"
             text = f"{email.subject}\n{email.body}".lower()
 
-            if "fyi" in text or "no action" in text or "for context" in text:
+            if re.search(r"\bfyi\b", text) or "no action" in text or "for context" in text:
                 self._handle_fyi(email)
             elif "meeting" in text or "schedule" in text:
                 self._handle_meeting(email)

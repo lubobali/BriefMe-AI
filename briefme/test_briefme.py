@@ -519,6 +519,36 @@ class TestEdgeCases:
         with pytest.raises(ValueError, match="limits inbox fetch"):
             enforce_security_policy("owner@example.com", 100)
 
+    def test_fyi_word_boundary_no_false_positive(self):
+        """'verify' should NOT match FYI pattern — word boundary check."""
+        from dataclasses import dataclass
+        from datetime import datetime
+
+        @dataclass
+        class MockEmail:
+            id: str
+            sender: str
+            subject: str
+            body: str
+            unread: bool
+            received_at: datetime
+
+        inbox = [
+            MockEmail("e1", "owner@example.com", "Please verify",
+                      "Please verify the attached document and sign it.",
+                      True, datetime.now()),
+        ]
+        tools = MockTools(inbox=inbox)
+        agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "owner@example.com")
+        agent.heartbeat()
+        # "verify" contains "fyi" substring but should NOT match — should be action
+        action_emails = [c for c in tools.call_log
+                         if c["tool"] == "Gmail:Send Email" and "Action" in c.get("subject", "")]
+        fyi_emails = [c for c in tools.call_log
+                      if c["tool"] == "Gmail:Send Email" and "FYI" in c.get("subject", "")]
+        assert len(action_emails) == 1
+        assert len(fyi_emails) == 0
+
     def test_all_outbound_to_approved_recipient(self):
         """All outbound communications go to approved_recipient only."""
         tools = MockTools(inbox=_make_inbox())
@@ -530,6 +560,18 @@ class TestEdgeCases:
         cal_calls = [c for c in tools.call_log if c["tool"] == "Google Calendar:Create Detailed Event"]
         for call in cal_calls:
             assert "boss@company.com" in call["payload"]
+
+    def test_no_secrets_in_tool_logs(self):
+        """Tool call logs never contain env vars, API keys, or secrets."""
+        import os
+        tools = MockTools(inbox=_make_inbox())
+        agent = EfficientChiefOfStaffAgent(tools, "owner@example.com", "owner@example.com")
+        agent.heartbeat()
+        log_text = str(tools.call_log).lower()
+        # None of these should appear in any tool output
+        secret_patterns = ["sk-", "nvapi-", "api_key", "password", "token=", "secret"]
+        for pattern in secret_patterns:
+            assert pattern not in log_text, f"Secret pattern '{pattern}' found in tool logs"
 
 
 # ============================================================
