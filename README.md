@@ -120,6 +120,15 @@ See `homework/compare_output.json` for a saved `/compare` endpoint result:
 }
 ```
 
+## Mock vs Real Flow
+
+BriefMe-AI has two processing paths:
+
+- **Mock path** (`heartbeat.py`): Uses keyword classification for the homework before/after comparison. No LLM calls, no guardrails needed — classification is deterministic. This is what `/heartbeat/mock` and `/compare` use.
+- **Real path** (`classifier.py`): Uses LLM (Claude Sonnet / NVIDIA NIM) for classification + summarization. PII redaction and prompt injection detection run **before** the LLM call. This is what the `TestClassifier` and `TestE2E` tests exercise.
+
+Both paths share the same schemas, dedup logic, rate limiting, and sender scoping. The guardrails (PII redaction, injection detection) apply only in the real path because the mock path never sends content to an LLM.
+
 ## Safety Controls
 
 - PII redaction on all email content before LLM (email, phone, IP, API keys)

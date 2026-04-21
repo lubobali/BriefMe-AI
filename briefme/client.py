@@ -67,7 +67,8 @@ def _call_anthropic(system_prompt: str, user_content: str, max_tokens: int) -> s
                         usage["input_tokens"] = msg_usage["input_tokens"]
             except (json.JSONDecodeError, KeyError):
                 continue
-    last_token_usage = usage
+    last_token_usage.clear()
+    last_token_usage.update(usage)
     return "".join(text_parts)
 
 

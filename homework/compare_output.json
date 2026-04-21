@@ -2,15 +2,32 @@
   "before": {
     "tool_calls": 19,
     "estimated_tokens": 2477,
-    "gmail_searches": 11
+    "gmail_searches": 11,
+    "llm_calls_per_email": 3,
+    "provider_tokens_estimate": {
+      "input_tokens": 4374,
+      "output_tokens": 603,
+      "note": "3 LLM calls/email x 3 emails (paraphrase + executive + risk)"
+    }
   },
   "after": {
     "tool_calls": 4,
     "estimated_tokens": 102,
-    "gmail_searches": 1
+    "gmail_searches": 1,
+    "llm_calls_per_email": 1,
+    "provider_tokens_per_email": {
+      "input_tokens": 486,
+      "output_tokens": 67
+    },
+    "provider_tokens_estimate": {
+      "input_tokens": 1458,
+      "output_tokens": 201,
+      "note": "1 LLM call/email x 3 emails (combined classify + summarize)"
+    }
   },
   "reduction": {
     "tool_calls_pct": 78.9,
-    "tokens_pct": 95.9
+    "workflow_tokens_pct": 95.9,
+    "llm_calls_pct": 66.7
   }
 }

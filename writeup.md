@@ -81,7 +81,7 @@ Result: 4 tool calls, 102 estimated tokens for 3 emails.
 - Edge cases: 6 tests (non-approved sender, rate limit, mixed intent, FYI regression, security policy)
 - E2E: 3 tests (classifier → calendar with real LLM, ambiguous date, real token usage capture)
 
-Run: `python -m pytest briefme/test_briefme.py -v` → 44 passed in 7.84s
+Run: `python -m pytest briefme/test_briefme.py -v` → 45 passed in 12.60s
 
 See `homework/test_run_output.log` for full captured test output.
 
