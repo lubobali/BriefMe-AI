@@ -133,7 +133,7 @@ Actions: []
 
 TestSchemaValidation (10 tests) — Pydantic model validation
 TestGuardrails (8 tests) — PII redaction + prompt injection detection
-TestLLMClient (1 test) — Real DataExpert API call
+TestLLMClient (1 test) — Real Anthropic API call
 TestClassifier (4 tests) — Real LLM classification for all 4 email types
 TestHeartbeat (8 tests) — Optimized workflow with mock tools
 TestAPI (4 tests) — FastAPI endpoint responses
@@ -141,4 +141,4 @@ TestEdgeCases (9 tests) — Non-approved sender, rate limit, mixed intent, FYI r
 TestE2E (3 tests) — Real LLM classifier → calendar, ambiguous date, real token usage
 ```
 
-Full captured test run log: `homework/test_run_output.log`
+Full captured test run log: `benchmarks/test_run_output.log`

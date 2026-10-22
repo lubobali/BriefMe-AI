@@ -1,4 +1,4 @@
-"""LLM client — supports DataExpert Anthropic proxy AND NVIDIA NIM API.
+"""LLM client — supports an Anthropic-compatible API AND NVIDIA NIM API.
 
 Reads LLM_PROVIDER from .env: "anthropic" (default) or "nvidia".
 Switch providers by changing .env — no code changes needed.
@@ -21,7 +21,7 @@ last_token_usage: dict = {}
 
 
 def _call_anthropic(system_prompt: str, user_content: str, max_tokens: int) -> str:
-    """Call Anthropic-compatible API (DataExpert proxy). Returns text."""
+    """Call an Anthropic-compatible API. Returns text."""
     global last_token_usage
     base_url = os.getenv("ANTHROPIC_BASE_URL", "")
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
@@ -109,7 +109,7 @@ def call_llm(system_prompt: str, user_content: str, max_tokens: int = 1000) -> s
     if provider == "nvidia":
         return _call_nvidia(system_prompt, user_content, max_tokens)
 
-    # Primary: Anthropic (DataExpert proxy), fallback: NVIDIA NIM
+    # Primary: Anthropic, fallback: NVIDIA NIM
     try:
         return _call_anthropic(system_prompt, user_content, max_tokens)
     except Exception:

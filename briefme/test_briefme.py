@@ -172,7 +172,7 @@ class TestGuardrails:
 
 
 class TestLLMClient:
-    """LLM client connects to DataExpert proxy and returns text."""
+    """LLM client connects to the Anthropic-compatible API and returns text."""
 
     def test_call_llm_returns_text(self):
         result = call_llm(
@@ -254,7 +254,7 @@ class TestClassifier:
 
 
 def _make_inbox():
-    """Standard 3-email inbox matching the homework test set."""
+    """Standard 3-email inbox (the before/after test set)."""
     from dataclasses import dataclass
     from datetime import datetime
 

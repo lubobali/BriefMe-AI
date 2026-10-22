@@ -1,9 +1,9 @@
 """
-OpenClaw-style workflow example for Day 2 homework.
+OpenClaw-style workflow: the wasteful baseline that BriefMe-AI optimizes.
 
 Purpose:
 - Provide a baseline implementation for optimization.
-- Let students measure and improve tool-call and token efficiency.
+- A baseline to measure and improve tool-call and token efficiency against.
 
 This script simulates a heartbeat loop where an agent:
 1) Checks inbox and processes recent messages

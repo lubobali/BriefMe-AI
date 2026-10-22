@@ -2,7 +2,7 @@
 
 AI-powered email chief of staff. Checks your inbox, classifies emails (meeting/action/FYI), creates calendar events, and sends you summaries — all optimized for minimal token usage.
 
-Built as a homework submission for DataExpert.io AI Engineering Bootcamp (Week 3) and as a real tool for personal use with OpenClaw + WhatsApp.
+Built as a real tool I use every day, with OpenClaw + WhatsApp.
 
 ## Real-Time WhatsApp Access — Calendar
 
@@ -50,7 +50,7 @@ Alfred reads from all connected Google Calendars, shows events grouped by day wi
 briefme/
   schemas.py        — Pydantic v2 models (Email, EmailClassification, Action, HeartbeatResult)
   guardrails.py     — PII redaction + prompt injection detection
-  client.py         — LLM client (DataExpert Anthropic proxy + NVIDIA NIM fallback)
+  client.py         — LLM client (Anthropic-compatible API + NVIDIA NIM fallback)
   classifier.py     — LLM email classification (1 call per email)
   heartbeat.py      — Optimized heartbeat workflow + mock tools
   api.py            — FastAPI endpoints (/health, /heartbeat/mock, /compare)
@@ -59,7 +59,7 @@ briefme/
 claude_skills/
   email_classifier.md — Combined classify + summarize prompt
 
-homework/
+benchmarks/
   before_after.md      — Metrics comparison table
   optimized_workflow.md — What changed and why
   test_evidence.md     — Test results for all 4 cases
@@ -121,7 +121,7 @@ Security policy enforces that `approved_sender` must be set — the agent will n
 
 ## Before/After Evidence (saved output)
 
-See `homework/compare_output.json` for a saved `/compare` endpoint result:
+See `benchmarks/compare_output.json` for a saved `/compare` endpoint result:
 ```json
 {
   "before": { "tool_calls": 19, "estimated_tokens": 2477, "gmail_searches": 11 },
@@ -134,7 +134,7 @@ See `homework/compare_output.json` for a saved `/compare` endpoint result:
 
 BriefMe-AI has two processing paths:
 
-- **Mock path** (`heartbeat.py`): Uses keyword classification for the homework before/after comparison. No LLM calls, no guardrails needed — classification is deterministic. This is what `/heartbeat/mock` and `/compare` use.
+- **Mock path** (`heartbeat.py`): Uses keyword classification for the before/after comparison. No LLM calls, no guardrails needed — classification is deterministic. This is what `/heartbeat/mock` and `/compare` use.
 - **Real path** (`classifier.py`): Uses LLM (Claude Sonnet / NVIDIA NIM) for classification + summarization. PII redaction and prompt injection detection run **before** the LLM call. This is what the `TestClassifier` and `TestE2E` tests exercise.
 
 Both paths share the same schemas, dedup logic, rate limiting, and sender scoping. The guardrails (PII redaction, injection detection) apply only in the real path because the mock path never sends content to an LLM.
@@ -164,7 +164,7 @@ BriefMe/
     test_briefme.py         — 47 tests across 8 classes
   claude_skills/
     email_classifier.md     — Combined classify + summarize prompt
-  homework/
+  benchmarks/
     HEARTBEAT_OPTIMIZED.md  — Optimized heartbeat instructions
     before_after.md         — Metrics comparison
     optimized_workflow.md   — What changed and why
@@ -184,7 +184,7 @@ BriefMe/
 **Environment variables used for test runs:**
 ```
 LLM_PROVIDER=anthropic
-ANTHROPIC_BASE_URL=https://www.dataexpert.io/api/v1/anthropic
+ANTHROPIC_BASE_URL=https://api.anthropic.com
 ANTHROPIC_MODEL=claude-sonnet-4-20250514
 NVIDIA_MODEL=nvidia/llama-3.1-nemotron-ultra-253b-v1  (fallback only)
 ```
@@ -201,5 +201,5 @@ python -c "from fastapi.testclient import TestClient; from briefme.api import ap
 ## Built With
 
 - Python 3.13, Pydantic v2, pytest, FastAPI
-- Claude Sonnet 4.6 via DataExpert proxy (primary)
+- Claude Sonnet 4.6 (primary)
 - NVIDIA NIM Nemotron Ultra 253B (fallback)

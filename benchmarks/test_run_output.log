@@ -1,7 +1,7 @@
 ============================= test session starts ==============================
-platform darwin -- Python 3.13.3, pytest-9.0.3, pluggy-1.6.0 -- /Users/lu/15_week_bootcamp/AI Bootcamp/BriefMe/venv/bin/python
+platform darwin -- Python 3.13.3, pytest-9.0.3, pluggy-1.6.0 -- /Users/lu/projects/BriefMe/venv/bin/python
 cachedir: .pytest_cache
-rootdir: /Users/lu/15_week_bootcamp/AI Bootcamp/BriefMe
+rootdir: /Users/lu/projects/BriefMe
 plugins: anyio-4.13.0
 collecting ... collected 47 items
 

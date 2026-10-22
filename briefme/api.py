@@ -23,7 +23,7 @@ app = FastAPI(title="BriefMe-AI", version="1.0")
 
 
 # -----------------------------
-# Mock email data (same as homework test set)
+# Mock email data (the before/after test set)
 # -----------------------------
 
 @dataclass
@@ -37,7 +37,7 @@ class MockEmail:
 
 
 def _standard_inbox() -> list[MockEmail]:
-    """The 4 homework test emails."""
+    """The 4 before/after test emails."""
     return [
         MockEmail("e1", "owner@example.com", "Schedule a meeting",
                   "Can you schedule a 30-minute meeting next Tuesday at 2pm?",
